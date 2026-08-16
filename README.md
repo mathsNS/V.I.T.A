@@ -2,6 +2,11 @@
 
 **V.I.T.A. (Validação Inteligente de Triagem e Atendimento)** é uma plataforma voltada à pré-triagem inteligente e ao gerenciamento do atendimento em saúde. O projeto foi desenvolvido como atividade prática das disciplinas de **Interação Humano-Computador (IHC)** e **Engenharia de Requisitos (ER)** da **Universidade Federal do Cariri (UFCA)**.
 
+## Documentação
+
+- [Mapa de Jornada do Usuário](docs/Mapa-de-Jornada-do-Usuario.md) - etapas, objetivos, dores, emoções e momentos críticos da experiência do paciente e do médico.
+- [Diagrama de Fluxo de Interação](docs/Diagrama-de-Fluxo-de-Interacao.md) - navegação entre telas, decisões, alternativas e exceções do protótipo.
+
 ## Protótipo de Alta Fidelidade
 
 O protótipo foi desenvolvido utilizando **React**, **Vite** e **TypeScript**, com **Tailwind CSS**, **shadcn/ui**, **Lucide Icons** e **Framer Motion** para construção da interface.

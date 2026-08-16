@@ -1,0 +1,37 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Build outputs
+dist/
+build/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Wiki/Documentação de referência local (não versionada)
+# Esses arquivos são para referência interna nos chats de IA e não precisam estar no repo
+docs/Requisitos-Funcionais.md
+docs/Requisitos-Nao-Funcionais.md
+docs/Regras-de-Negocio.md
+docs/Personas.md
+docs/Storytelling-e-Storyboarding.md
+docs/Service-Blueprint.md
+
+# Mas manter os artefatos principais do projeto
+!docs/Mapa-de-Jornada-do-Usuario.md
+!docs/Diagrama-de-Fluxo-de-Interacao.md

@@ -75,6 +75,8 @@ export interface Appointment {
   priority?: Priority;
   reason?: string;
   triageId?: string;
+  patientId?: string;
+  patientName?: string;
   location?: string;
   createdAt: string;
 }
@@ -98,4 +100,31 @@ export interface MedicalRecord {
   prescriptions: string[];
   recommendations: string;
   examResults?: { name: string; status: "disponivel" | "pendente" }[];
+  appointmentId?: string;
+  patientId?: string;
+  patientName?: string;
+  clinicalNotes?: string;
+  examRequests?: string[];
+  referral?: string;
+  needsReturn?: boolean;
+  returnDate?: string;
+  updatedAt?: string;
+  updatedBy?: string;
+}
+
+export interface PatientProfile {
+  medications: string[];
+  allergies: string[];
+  chronicConditions: string[];
+}
+
+export interface CareDraft {
+  clinicalNotes: string;
+  diagnosis: string;
+  recommendations: string;
+  prescriptions: string[];
+  examRequests: string[];
+  referral: string;
+  needsReturn: boolean;
+  returnDate?: string;
 }

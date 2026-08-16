@@ -7,6 +7,8 @@ import { TopBar } from "@/components/layout/TopBar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAppData } from "@/context/AppDataContext";
+import { useAuth } from "@/context/AuthContext";
+import { toast } from "sonner";
 import { DOCTORS, SPECIALTIES, TIME_SLOTS } from "@/lib/mockData";
 import type { Modality } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -14,10 +16,12 @@ import { cn } from "@/lib/utils";
 export default function Scheduling() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { addAppointment } = useAppData();
+  const { addAppointment, hasScheduleConflict, triageResults } = useAppData();
+  const { user } = useAuth();
 
   const preselectedSpecialty = (location.state as { specialtyId?: string } | null)
     ?.specialtyId;
+  const triageId = (location.state as { triageId?: string } | null)?.triageId;
 
   const [step, setStep] = useState(preselectedSpecialty ? 2 : 1);
   const [specialtyId, setSpecialtyId] = useState(preselectedSpecialty ?? "");
@@ -55,6 +59,13 @@ export default function Scheduling() {
   const specialty = SPECIALTIES.find((s) => s.id === specialtyId);
 
   function handleConfirm() {
+    if (hasScheduleConflict(doctorId, date, time)) {
+      toast.error("Este horário acabou de ficar indisponível. Escolha outro horário.");
+      setStep(3);
+      setTime("");
+      return;
+    }
+    const triage = triageResults.find((item) => item.id === triageId);
     const appointment = addAppointment({
       specialtyId,
       doctorId,
@@ -62,7 +73,10 @@ export default function Scheduling() {
       time,
       modality,
       status: "agendada",
-      reason: "Agendamento realizado pelo aplicativo",
+      reason: triage?.chiefComplaint ?? "Agendamento realizado pelo aplicativo",
+      triageId,
+      patientId: user?.id,
+      patientName: user?.name ?? "Carlos Silva",
       location:
         modality === "teleconsulta"
           ? "Teleconsulta pelo app V.I.T.A."

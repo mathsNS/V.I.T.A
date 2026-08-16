@@ -108,6 +108,7 @@ export default function Login() {
         </div>
 
         <div className="mt-auto flex flex-col items-center gap-4 pt-10">
+          <button type="button" onClick={() => navigate("/profissional/login")} className="text-sm font-semibold text-primary hover:underline">Sou profissional de saúde</button>
           <button
             type="button"
             onClick={() => navigate(-1)}

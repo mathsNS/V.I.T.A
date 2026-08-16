@@ -19,6 +19,14 @@ import HistoryList from "@/pages/history/HistoryList";
 import HistoryDetail from "@/pages/history/HistoryDetail";
 import Notifications from "@/pages/Notifications";
 import NotFound from "@/pages/NotFound";
+import { ProfessionalRoute } from "@/components/layout/ProfessionalRoute";
+import { ProfessionalLayout } from "@/components/layout/ProfessionalLayout";
+import ProfessionalLogin from "@/pages/professional/ProfessionalLogin";
+import ProfessionalQueue from "@/pages/professional/ProfessionalQueue";
+import ProfessionalCare from "@/pages/professional/ProfessionalCare";
+import ProfessionalSchedule from "@/pages/professional/ProfessionalSchedule";
+import ProfessionalRecords from "@/pages/professional/ProfessionalRecords";
+import ProfessionalProfile from "@/pages/professional/ProfessionalProfile";
 
 function App() {
   return (
@@ -35,6 +43,17 @@ function App() {
           <Route path="/agendamento" element={<Scheduling />} />
           <Route path="/agendamento/confirmacao" element={<ScheduleConfirmation />} />
           <Route path="/consultas/:id/teleconsulta" element={<Teleconsult />} />
+        </Route>
+      </Route>
+
+      <Route path="/profissional/login" element={<ProfessionalLogin />} />
+      <Route element={<ProfessionalRoute />}>
+        <Route element={<ProfessionalLayout />}>
+          <Route path="/profissional/fila" element={<ProfessionalQueue />} />
+          <Route path="/profissional/atendimento/:id" element={<ProfessionalCare />} />
+          <Route path="/profissional/agenda" element={<ProfessionalSchedule />} />
+          <Route path="/profissional/prontuarios" element={<ProfessionalRecords />} />
+          <Route path="/profissional/perfil" element={<ProfessionalProfile />} />
         </Route>
       </Route>
 

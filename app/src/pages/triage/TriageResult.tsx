@@ -79,7 +79,7 @@ export default function TriageResult() {
           <Button
             size="lg"
             className="w-full rounded-2xl"
-            onClick={() => navigate("/agendamento", { state: { specialtyId: result.specialtyId } })}
+            onClick={() => navigate("/agendamento", { state: { specialtyId: result.specialtyId, triageId: result.id } })}
           >
             <CalendarClock className="h-4.5 w-4.5" /> Agendar consulta agora
           </Button>

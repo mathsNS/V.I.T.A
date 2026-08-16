@@ -130,3 +130,17 @@
     @apply font-sans;
     }
 }
+
+/* A área clínica vive em uma WebView estreita mesmo quando aberta no desktop. */
+[data-professional-shell] [class*="sm:grid-cols"],
+[data-professional-shell] [class*="md:grid-cols"],
+[data-professional-shell] [class*="lg:grid-cols"],
+[data-professional-shell] [class*="xl:grid-cols"] {
+  grid-template-columns: minmax(0, 1fr) !important;
+}
+
+[data-professional-shell] [class*="md:flex-row"],
+[data-professional-shell] [class*="lg:flex-row"],
+[data-professional-shell] [class*="xl:flex-row"] {
+  flex-direction: column !important;
+}

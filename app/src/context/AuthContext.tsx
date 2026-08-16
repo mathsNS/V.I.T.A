@@ -2,11 +2,11 @@ import {
   createContext,
   useContext,
   useEffect,
-  useMemo,
   useState,
   type ReactNode,
 } from "react";
-import type { User } from "@/lib/types";
+import type { Doctor, User } from "@/lib/types";
+import { DOCTORS } from "@/lib/mockData";
 import { loadFromStorage, saveToStorage, uid } from "@/lib/storage";
 
 const AVATAR_COLORS = ["#13315A", "#98BAD5", "#4CA989", "#E0A339", "#C77DB0"];
@@ -26,17 +26,22 @@ interface AuthResult {
 
 interface AuthContextValue {
   user: User | null;
+  professional: Doctor | null;
   isAuthenticated: boolean;
+  isProfessionalAuthenticated: boolean;
   failedAttempts: number;
   login: (email: string, password: string) => Promise<AuthResult>;
+  professionalLogin: (email: string, password: string) => Promise<AuthResult>;
   signup: (data: SignupData) => Promise<AuthResult>;
   logout: () => void;
+  professionalLogout: () => void;
   updateUser: (partial: Partial<User>) => void;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 const USER_KEY = "vita:user";
+const PROFESSIONAL_KEY = "vita:professional";
 
 function wait(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -47,10 +52,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     loadFromStorage<User | null>(USER_KEY, null),
   );
   const [failedAttempts, setFailedAttempts] = useState(0);
+  const [professional, setProfessional] = useState<Doctor | null>(() =>
+    loadFromStorage<Doctor | null>(PROFESSIONAL_KEY, null),
+  );
 
   useEffect(() => {
     saveToStorage(USER_KEY, user);
   }, [user]);
+  useEffect(() => saveToStorage(PROFESSIONAL_KEY, professional), [professional]);
 
   const login = async (email: string, password: string): Promise<AuthResult> => {
     await wait(500);
@@ -122,24 +131,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { success: true };
   };
 
+  const professionalLogin = async (email: string, password: string): Promise<AuthResult> => {
+    await wait(500);
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || password.length < 6) {
+      return { success: false, message: "Informe um e-mail válido e uma senha com pelo menos 6 caracteres." };
+    }
+    setProfessional(DOCTORS[0]);
+    return { success: true };
+  };
+
   const logout = () => setUser(null);
 
   const updateUser = (partial: Partial<User>) => {
     setUser((current) => (current ? { ...current, ...partial } : current));
   };
 
-  const value = useMemo<AuthContextValue>(
-    () => ({
+  const value: AuthContextValue = {
       user,
+      professional,
       isAuthenticated: !!user,
+      isProfessionalAuthenticated: !!professional,
       failedAttempts,
       login,
+      professionalLogin,
       signup,
       logout,
+      professionalLogout: () => setProfessional(null),
       updateUser,
-    }),
-    [user, failedAttempts],
-  );
+  };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

@@ -2,7 +2,6 @@ import {
   createContext,
   useContext,
   useEffect,
-  useMemo,
   useState,
   type ReactNode,
 } from "react";
@@ -11,6 +10,7 @@ import type {
   MedicalRecord,
   Notification,
   TriageResult,
+  CareDraft,
 } from "@/lib/types";
 import {
   INITIAL_APPOINTMENTS,
@@ -26,6 +26,7 @@ interface AppDataContextValue {
   triageResults: TriageResult[];
   unreadNotifications: number;
   addAppointment: (appointment: Omit<Appointment, "id" | "createdAt">) => Appointment;
+  hasScheduleConflict: (doctorId: string, date: string, time: string) => boolean;
   cancelAppointment: (id: string) => void;
   rescheduleAppointment: (id: string, date: string, time: string) => void;
   confirmAppointment: (id: string) => void;
@@ -34,6 +35,9 @@ interface AppDataContextValue {
   markNotificationRead: (id: string) => void;
   markAllNotificationsRead: () => void;
   addTriageResult: (result: Omit<TriageResult, "id" | "createdAt">) => TriageResult;
+  startAppointment: (id: string, doctorName: string) => void;
+  saveCare: (id: string, draft: CareDraft, doctorName: string) => void;
+  concludeCare: (id: string, draft: CareDraft, doctorName: string) => void;
 }
 
 const AppDataContext = createContext<AppDataContextValue | undefined>(undefined);
@@ -72,6 +76,9 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   };
 
   const addAppointment: AppDataContextValue["addAppointment"] = (appointment) => {
+    if (appointments.some((apt) => apt.doctorId === appointment.doctorId && apt.date === appointment.date && apt.time === appointment.time && apt.status !== "cancelada")) {
+      throw new Error("Horário indisponível para este profissional.");
+    }
     const created: Appointment = {
       ...appointment,
       id: uid("apt"),
@@ -85,6 +92,9 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     });
     return created;
   };
+
+  const hasScheduleConflict = (doctorId: string, date: string, time: string) =>
+    appointments.some((apt) => apt.doctorId === doctorId && apt.date === date && apt.time === time && apt.status !== "cancelada");
 
   const cancelAppointment: AppDataContextValue["cancelAppointment"] = (id) => {
     setAppointments((current) =>
@@ -145,16 +155,49 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     return created;
   };
 
+  const startAppointment = (id: string, doctorName: string) => {
+    setAppointments((current) => current.map((apt) => apt.id === id ? { ...apt, status: "em_andamento" } : apt));
+    addNotification({ title: "Relatório visualizado", body: `${doctorName} visualizou seu relatório de pré-triagem.`, type: "triagem" });
+  };
+
+  const toRecord = (id: string, draft: CareDraft, doctorName: string): MedicalRecord | null => {
+    const apt = appointments.find((item) => item.id === id);
+    if (!apt) return null;
+    return {
+      id: uid("rec"), appointmentId: id, patientId: apt.patientId, patientName: apt.patientName ?? "Carlos Silva",
+      date: new Date().toISOString(), doctorName, specialtyId: apt.specialtyId,
+      diagnosis: draft.diagnosis, clinicalNotes: draft.clinicalNotes,
+      prescriptions: draft.prescriptions, recommendations: draft.recommendations,
+      examRequests: draft.examRequests, examResults: draft.examRequests.map((name) => ({ name, status: "pendente" as const })),
+      referral: draft.referral, needsReturn: draft.needsReturn, returnDate: draft.returnDate,
+      updatedAt: new Date().toISOString(), updatedBy: doctorName,
+    };
+  };
+
+  const saveCare = (id: string, draft: CareDraft, doctorName: string) => {
+    const record = toRecord(id, draft, doctorName);
+    if (!record) return;
+    setMedicalRecords((current) => [record, ...current.filter((item) => item.appointmentId !== id)]);
+  };
+
+  const concludeCare = (id: string, draft: CareDraft, doctorName: string) => {
+    const record = toRecord(id, draft, doctorName);
+    if (!record) return;
+    setAppointments((current) => current.map((apt) => apt.id === id ? { ...apt, status: "concluida" } : apt));
+    setMedicalRecords((current) => [record, ...current.filter((item) => item.appointmentId !== id)]);
+    addNotification({ title: "Consulta concluída", body: `${doctorName} concluiu sua consulta. As orientações já estão no histórico.`, type: "consulta", link: `/historico/${record.id}` });
+  };
+
   const unreadNotifications = notifications.filter((n) => !n.read).length;
 
-  const value = useMemo<AppDataContextValue>(
-    () => ({
+  const value: AppDataContextValue = {
       appointments,
       notifications,
       medicalRecords,
       triageResults,
       unreadNotifications,
       addAppointment,
+      hasScheduleConflict,
       cancelAppointment,
       rescheduleAppointment,
       confirmAppointment,
@@ -163,9 +206,10 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       markNotificationRead,
       markAllNotificationsRead,
       addTriageResult,
-    }),
-    [appointments, notifications, medicalRecords, triageResults, unreadNotifications],
-  );
+      startAppointment,
+      saveCare,
+      concludeCare,
+  };
 
   return <AppDataContext.Provider value={value}>{children}</AppDataContext.Provider>;
 }

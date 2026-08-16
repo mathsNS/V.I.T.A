@@ -68,9 +68,9 @@ export const FOLLOW_UP_QUESTIONS: TriageQuestion[] = [
   },
 ];
 
-export const PRIORITY_LABELS: Record<Priority, { label: string; color: string }> = {
-  baixa: { label: "Prioridade baixa", color: "bg-emerald-100 text-emerald-700 border-emerald-200" },
-  media: { label: "Prioridade média", color: "bg-amber-100 text-amber-700 border-amber-200" },
-  alta: { label: "Prioridade alta", color: "bg-orange-100 text-orange-700 border-orange-200" },
-  emergencia: { label: "Emergência", color: "bg-red-100 text-red-700 border-red-200" },
+export const PRIORITY_LABELS: Record<Priority, { label: string; color: string; description: string }> = {
+  baixa: { label: "Prioridade baixa", color: "bg-emerald-100 text-emerald-700 border-emerald-200", description: "Seu caso pode aguardar agendamento regular. Procure atendimento em até 7 dias se os sintomas persistirem." },
+  media: { label: "Prioridade média", color: "bg-amber-100 text-amber-700 border-amber-200", description: "Recomendamos buscar atendimento em até 48 horas. Evite automedicação e observe a evolução dos sintomas." },
+  alta: { label: "Prioridade alta", color: "bg-orange-100 text-orange-700 border-orange-200", description: "Procure atendimento em até 24 horas. Se os sintomas piorarem, dirija-se a uma UPA ou pronto-socorro." },
+  emergencia: { label: "Emergência", color: "bg-red-100 text-red-700 border-red-200", description: "Situação de emergência. Ligue 192 (SAMU) ou vá imediatamente ao pronto-socorro mais próximo." },
 };

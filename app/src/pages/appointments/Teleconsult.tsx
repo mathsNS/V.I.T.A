@@ -1,10 +1,19 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { CheckCircle2, Mic, MicOff, PhoneOff, Video, VideoOff } from "lucide-react";
+import { CheckCircle2, Mic, MicOff, PhoneOff, Video, VideoOff, Wifi } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { useAppData } from "@/context/AppDataContext";
 import { DOCTORS } from "@/lib/mockData";
+
+type ConnectionStatus = "Boa" | "Instável" | "Reconectando";
 
 export default function Teleconsult() {
   const { id } = useParams();
@@ -17,10 +26,26 @@ export default function Teleconsult() {
   const [micOn, setMicOn] = useState(true);
   const [camOn, setCamOn] = useState(true);
   const [ended, setEnded] = useState(false);
+  const [confirmEndOpen, setConfirmEndOpen] = useState(false);
+  const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>("Boa");
 
   useEffect(() => {
     if (ended) return;
     const t = setInterval(() => setSeconds((s) => s + 1), 1000);
+    return () => clearInterval(t);
+  }, [ended]);
+
+  // Simulate connection fluctuation
+  useEffect(() => {
+    if (ended) return;
+    const t = setInterval(() => {
+      setConnectionStatus((s) => {
+        if (s === "Boa" && Math.random() < 0.15) return "Instável";
+        if (s === "Instável") return "Reconectando";
+        if (s === "Reconectando") return "Boa";
+        return "Boa";
+      });
+    }, 7000);
     return () => clearInterval(t);
   }, [ended]);
 
@@ -29,6 +54,7 @@ export default function Teleconsult() {
 
   function handleEndCall() {
     setEnded(true);
+    setConfirmEndOpen(false);
     if (appointment) {
       completeAppointment(appointment.id, {
         date: appointment.date,
@@ -40,6 +66,13 @@ export default function Teleconsult() {
       });
     }
   }
+
+  const connectionColor =
+    connectionStatus === "Boa"
+      ? "bg-emerald-500/20 text-emerald-300"
+      : connectionStatus === "Instável"
+        ? "bg-amber-500/20 text-amber-300"
+        : "bg-blue-500/20 text-blue-300";
 
   if (ended) {
     return (
@@ -67,7 +100,9 @@ export default function Teleconsult() {
     <div className="relative flex min-h-svh flex-1 flex-col bg-slate-900 text-white">
       <div className="flex items-center justify-between px-5 pt-6 text-sm font-medium">
         <span>{mm}:{ss}</span>
-        <span className="rounded-full bg-white/10 px-3 py-1 text-xs">Conexão estável</span>
+        <span className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-xs ${connectionColor}`}>
+          <Wifi className="h-3 w-3" /> Conexão: {connectionStatus}
+        </span>
       </div>
 
       <div className="relative flex flex-1 flex-col items-center justify-center gap-4">
@@ -94,6 +129,7 @@ export default function Teleconsult() {
       <div className="flex items-center justify-center gap-4 pb-10">
         <button
           type="button"
+          aria-label={micOn ? "Desativar microfone" : "Ativar microfone"}
           onClick={() => setMicOn((v) => !v)}
           className="flex h-14 w-14 items-center justify-center rounded-full bg-white/10 text-white"
         >
@@ -101,19 +137,41 @@ export default function Teleconsult() {
         </button>
         <button
           type="button"
-          onClick={handleEndCall}
+          aria-label="Encerrar chamada"
+          onClick={() => setConfirmEndOpen(true)}
           className="flex h-16 w-16 items-center justify-center rounded-full bg-destructive text-white shadow-lg"
         >
           <PhoneOff className="h-6 w-6" />
         </button>
         <button
           type="button"
+          aria-label={camOn ? "Desativar câmera" : "Ativar câmera"}
           onClick={() => setCamOn((v) => !v)}
           className="flex h-14 w-14 items-center justify-center rounded-full bg-white/10 text-white"
         >
           {camOn ? <Video className="h-5 w-5" /> : <VideoOff className="h-5 w-5" />}
         </button>
       </div>
+
+      {/* TEL01 – confirmation before ending */}
+      <Dialog open={confirmEndOpen} onOpenChange={setConfirmEndOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Encerrar teleconsulta?</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            Deseja realmente encerrar a consulta? Esta ação não pode ser desfeita.
+          </p>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConfirmEndOpen(false)}>
+              Continuar consulta
+            </Button>
+            <Button variant="destructive" onClick={handleEndCall}>
+              Encerrar chamada
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

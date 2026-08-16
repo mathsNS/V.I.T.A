@@ -46,6 +46,7 @@ export default function TriageResult() {
           <Badge variant="outline" className={`${priority.color} border px-3 py-1 text-sm`}>
             {priority.label}
           </Badge>
+          <p className="text-sm font-medium text-foreground">{priority.description}</p>
           <p className="text-sm text-muted-foreground">
             Sua pré-triagem foi concluída e já está disponível para o profissional de saúde.
           </p>
@@ -90,6 +91,9 @@ export default function TriageResult() {
           >
             Aguardar contato do profissional
           </Button>
+          <p className="text-center text-xs text-muted-foreground">
+            Entraremos em contato em até 24h úteis para orientações.
+          </p>
         </div>
       </div>
     </div>

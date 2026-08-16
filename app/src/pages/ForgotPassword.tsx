@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { CheckCircle2, Loader2 } from "lucide-react";
+import { CheckCircle2, Eye, EyeOff, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,6 +16,9 @@ export default function ForgotPassword() {
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -50,6 +53,10 @@ export default function ForgotPassword() {
     setError(null);
     if (password.length < 6) {
       setError("A nova senha deve ter pelo menos 6 caracteres.");
+      return;
+    }
+    if (password !== confirmPassword) {
+      setError("As senhas não coincidem. Verifique e tente novamente.");
       return;
     }
     setLoading(true);
@@ -157,17 +164,51 @@ export default function ForgotPassword() {
             <p className="mt-1 text-sm text-muted-foreground">
               Escolha uma nova senha para sua conta.
             </p>
-            <div className="mt-8 space-y-1.5">
-              <Label htmlFor="fp-password">Nova senha</Label>
-              <Input
-                id="fp-password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Nova senha"
-                className="h-12 rounded-2xl"
-                required
-              />
+            <div className="mt-8 space-y-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="fp-password">Nova senha</Label>
+                <div className="relative">
+                  <Input
+                    id="fp-password"
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Nova senha"
+                    className="h-12 rounded-2xl pr-11"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((v) => !v)}
+                    className="absolute inset-y-0 right-3 flex items-center text-muted-foreground"
+                    aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+                  >
+                    {showPassword ? <EyeOff className="h-4.5 w-4.5" /> : <Eye className="h-4.5 w-4.5" />}
+                  </button>
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="fp-confirm-password">Confirmar nova senha</Label>
+                <div className="relative">
+                  <Input
+                    id="fp-confirm-password"
+                    type={showConfirmPassword ? "text" : "password"}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="Confirme a nova senha"
+                    className="h-12 rounded-2xl pr-11"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword((v) => !v)}
+                    className="absolute inset-y-0 right-3 flex items-center text-muted-foreground"
+                    aria-label={showConfirmPassword ? "Ocultar confirmação" : "Mostrar confirmação"}
+                  >
+                    {showConfirmPassword ? <EyeOff className="h-4.5 w-4.5" /> : <Eye className="h-4.5 w-4.5" />}
+                  </button>
+                </div>
+              </div>
             </div>
             {error && (
               <p className="mt-4 rounded-xl bg-destructive/10 px-3 py-2 text-sm font-medium text-destructive" role="alert">

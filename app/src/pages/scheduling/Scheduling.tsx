@@ -2,9 +2,10 @@ import { useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import * as Icons from "lucide-react";
-import { MapPin, Star, Video } from "lucide-react";
+import { MapPin, Search, Star, Video } from "lucide-react";
 import { TopBar } from "@/components/layout/TopBar";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useAppData } from "@/context/AppDataContext";
 import { DOCTORS, SPECIALTIES, TIME_SLOTS } from "@/lib/mockData";
 import type { Modality } from "@/lib/types";
@@ -21,6 +22,7 @@ export default function Scheduling() {
   const [step, setStep] = useState(preselectedSpecialty ? 2 : 1);
   const [specialtyId, setSpecialtyId] = useState(preselectedSpecialty ?? "");
   const [doctorId, setDoctorId] = useState("");
+  const [doctorSearch, setDoctorSearch] = useState("");
   const [modality, setModality] = useState<Modality>("teleconsulta");
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
@@ -29,6 +31,26 @@ export default function Scheduling() {
     () => DOCTORS.filter((d) => d.specialtyId === specialtyId),
     [specialtyId],
   );
+
+  const filteredDoctors = useMemo(
+    () =>
+      doctorSearch.trim()
+        ? doctorsForSpecialty.filter((d) =>
+            d.name.toLowerCase().includes(doctorSearch.toLowerCase()),
+          )
+        : doctorsForSpecialty,
+    [doctorsForSpecialty, doctorSearch],
+  );
+
+  // AGE02: filter out past time slots when date is today
+  const today = new Date().toISOString().slice(0, 10);
+  const nowHHMM = new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", hour12: false });
+  const availableSlots = useMemo(
+    () =>
+      date === today ? TIME_SLOTS.filter((slot) => slot > nowHHMM) : TIME_SLOTS,
+    [date, today, nowHHMM],
+  );
+
   const doctor = DOCTORS.find((d) => d.id === doctorId);
   const specialty = SPECIALTIES.find((s) => s.id === specialtyId);
 
@@ -121,8 +143,25 @@ export default function Scheduling() {
           >
             <h2 className="text-lg font-bold text-foreground">Escolha o profissional</h2>
             <p className="text-sm text-muted-foreground">{specialty?.name}</p>
-            <div className="mt-4 space-y-3">
-              {doctorsForSpecialty.map((d) => {
+            <div className="relative mt-4">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={doctorSearch}
+                onChange={(e) => setDoctorSearch(e.target.value)}
+                placeholder="Buscar profissional..."
+                className="h-10 rounded-2xl pl-9"
+              />
+            </div>
+            <p className="mt-2 text-xs text-muted-foreground">
+              {filteredDoctors.length} profissional{filteredDoctors.length !== 1 ? "is" : ""} disponível{filteredDoctors.length !== 1 ? "is" : ""}
+            </p>
+            <div className="mt-2 space-y-3">
+              {filteredDoctors.length === 0 && (
+                <p className="rounded-2xl bg-muted/60 p-4 text-center text-sm text-muted-foreground">
+                  Nenhum profissional encontrado.
+                </p>
+              )}
+              {filteredDoctors.map((d) => {
                 const selected = doctorId === d.id;
                 return (
                   <button
@@ -155,7 +194,10 @@ export default function Scheduling() {
               <button type="button" onClick={() => setStep(1)} className="text-sm font-semibold text-primary">
                 ← Voltar
               </button>
-              <Button disabled={!doctorId} className="rounded-2xl px-6" onClick={() => setStep(3)}>
+              {!doctorId && (
+                <p className="text-xs text-muted-foreground">Selecione um profissional para continuar.</p>
+              )}
+              <Button disabled={!doctorId} className="rounded-2xl px-6" onClick={() => { setDoctorSearch(""); setStep(3); }}>
                 Continuar
               </Button>
             </div>
@@ -215,8 +257,16 @@ export default function Scheduling() {
             </div>
 
             <h3 className="mt-6 text-sm font-semibold text-foreground">Escolha o horário</h3>
+            {date === today && availableSlots.length < TIME_SLOTS.length && (
+              <p className="mt-1 text-xs text-amber-600">Horários já passados foram removidos.</p>
+            )}
+            {date && availableSlots.length === 0 && (
+              <p className="mt-2 rounded-xl bg-amber-50 px-3 py-2 text-xs text-amber-700">
+                Não há horários disponíveis para hoje. Selecione outra data.
+              </p>
+            )}
             <div className="mt-2 grid grid-cols-4 gap-2">
-              {TIME_SLOTS.map((slot) => (
+              {availableSlots.map((slot) => (
                 <button
                   key={slot}
                   type="button"
@@ -230,6 +280,12 @@ export default function Scheduling() {
                 </button>
               ))}
             </div>
+
+            {(!date || !time) && (
+              <p className="mt-2 text-xs text-muted-foreground">
+                {!date ? "Selecione uma data para continuar." : "Selecione um horário para continuar."}
+              </p>
+            )}
 
             <div className="mt-auto flex items-center justify-between pt-8">
               <button type="button" onClick={() => setStep(2)} className="text-sm font-semibold text-primary">

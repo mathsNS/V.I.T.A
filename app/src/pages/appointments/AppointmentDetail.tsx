@@ -23,6 +23,7 @@ export default function AppointmentDetail() {
     useAppData();
   const [cancelOpen, setCancelOpen] = useState(false);
   const [rescheduleOpen, setRescheduleOpen] = useState(false);
+  const [newDate, setNewDate] = useState<string | null>(null);
   const [newTime, setNewTime] = useState<string | null>(null);
 
   const appointment = appointments.find((a) => a.id === id);
@@ -177,8 +178,29 @@ export default function AppointmentDetail() {
       <Dialog open={rescheduleOpen} onOpenChange={setRescheduleOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Escolha um novo horário</DialogTitle>
+            <DialogTitle>Reagendar consulta</DialogTitle>
           </DialogHeader>
+          <p className="rounded-xl bg-amber-50 px-3 py-2 text-xs font-medium text-amber-700">
+            ⚠️ Ao reagendar, o horário atual será liberado e não poderá ser recuperado.
+          </p>
+          <p className="text-sm font-semibold text-foreground">Escolha a data</p>
+          <div className="flex flex-wrap gap-2">
+            {(doctor?.nextSlots ?? []).map((d) => (
+              <button
+                key={d}
+                type="button"
+                onClick={() => { setNewDate(d); setNewTime(null); }}
+                className={`rounded-xl border px-3 py-1.5 text-xs font-medium transition-colors ${
+                  newDate === d
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : "border-border bg-card"
+                }`}
+              >
+                {new Date(`${d}T00:00:00`).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}
+              </button>
+            ))}
+          </div>
+          <p className="text-sm font-semibold text-foreground">Escolha o horário</p>
           <div className="grid grid-cols-3 gap-2">
             {TIME_SLOTS.map((slot) => (
               <button
@@ -200,10 +222,10 @@ export default function AppointmentDetail() {
               Voltar
             </Button>
             <Button
-              disabled={!newTime}
+              disabled={!newDate || !newTime}
               onClick={() => {
-                if (!newTime) return;
-                rescheduleAppointment(appointment.id, appointment.date, newTime);
+                if (!newDate || !newTime) return;
+                rescheduleAppointment(appointment.id, newDate, newTime);
                 setRescheduleOpen(false);
                 toast.success("Consulta reagendada!");
               }}

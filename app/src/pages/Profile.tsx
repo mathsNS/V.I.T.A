@@ -3,7 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import {
   ChevronRight,
+  Eye,
+  EyeOff,
   HeadphonesIcon,
+  KeyRound,
   LogOut,
   Pencil,
   ShieldCheck,
@@ -28,14 +31,34 @@ export default function Profile() {
   const navigate = useNavigate();
   const { user, logout, updateUser } = useAuth();
   const [editOpen, setEditOpen] = useState(false);
+  const [changePasswordOpen, setChangePasswordOpen] = useState(false);
   const [name, setName] = useState(user?.name ?? "");
   const [phone, setPhone] = useState(user?.phone ?? "");
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmNewPassword, setConfirmNewPassword] = useState("");
+  const [showCurrentPw, setShowCurrentPw] = useState(false);
+  const [showNewPw, setShowNewPw] = useState(false);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
   const [notificationsOn, setNotificationsOn] = useState(true);
 
   function handleSaveProfile() {
     updateUser({ name, phone });
     setEditOpen(false);
     toast.success("Perfil atualizado com sucesso.");
+  }
+
+  function handleChangePassword() {
+    setPasswordError(null);
+    if (!currentPassword) return setPasswordError("Informe a senha atual.");
+    if (newPassword.length < 6) return setPasswordError("A nova senha deve ter pelo menos 6 caracteres.");
+    if (newPassword !== confirmNewPassword) return setPasswordError("As senhas não coincidem.");
+    // In prototype, accept any current password
+    setChangePasswordOpen(false);
+    setCurrentPassword("");
+    setNewPassword("");
+    setConfirmNewPassword("");
+    toast.success("Senha alterada com sucesso.");
   }
 
   function handleLogout() {
@@ -85,7 +108,7 @@ export default function Profile() {
           </div>
           <button
             type="button"
-            onClick={() => toast.info("Seus dados são protegidos conforme a LGPD.")}
+            onClick={() => { setPasswordError(null); setChangePasswordOpen(true); }}
             className="flex w-full items-center justify-between px-4 py-4 text-left"
           >
             <div className="flex items-center gap-3">
@@ -142,6 +165,72 @@ export default function Profile() {
           <SheetFooter>
             <Button onClick={handleSaveProfile} className="w-full rounded-2xl">
               Salvar alterações
+            </Button>
+          </SheetFooter>
+        </SheetContent>
+      </Sheet>
+
+      {/* PER02 – password change sheet */}
+      <Sheet open={changePasswordOpen} onOpenChange={setChangePasswordOpen}>
+        <SheetContent side="bottom" className="rounded-t-3xl">
+          <SheetHeader>
+            <SheetTitle className="flex items-center gap-2">
+              <KeyRound className="h-4.5 w-4.5" /> Alterar senha
+            </SheetTitle>
+          </SheetHeader>
+          <div className="space-y-4 px-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="current-pw">Senha atual</Label>
+              <div className="relative">
+                <Input
+                  id="current-pw"
+                  type={showCurrentPw ? "text" : "password"}
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  placeholder="Senha atual"
+                  className="rounded-xl pr-11"
+                />
+                <button type="button" onClick={() => setShowCurrentPw((v) => !v)} className="absolute inset-y-0 right-3 flex items-center text-muted-foreground" aria-label={showCurrentPw ? "Ocultar" : "Mostrar"}>
+                  {showCurrentPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="new-pw">Nova senha</Label>
+              <div className="relative">
+                <Input
+                  id="new-pw"
+                  type={showNewPw ? "text" : "password"}
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="Nova senha (mín. 6 caracteres)"
+                  className="rounded-xl pr-11"
+                />
+                <button type="button" onClick={() => setShowNewPw((v) => !v)} className="absolute inset-y-0 right-3 flex items-center text-muted-foreground" aria-label={showNewPw ? "Ocultar" : "Mostrar"}>
+                  {showNewPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="confirm-new-pw">Confirmar nova senha</Label>
+              <Input
+                id="confirm-new-pw"
+                type="password"
+                value={confirmNewPassword}
+                onChange={(e) => setConfirmNewPassword(e.target.value)}
+                placeholder="Repita a nova senha"
+                className="rounded-xl"
+              />
+            </div>
+            {passwordError && (
+              <p className="rounded-xl bg-destructive/10 px-3 py-2 text-sm font-medium text-destructive" role="alert">
+                {passwordError}
+              </p>
+            )}
+          </div>
+          <SheetFooter>
+            <Button onClick={handleChangePassword} className="w-full rounded-2xl">
+              Salvar nova senha
             </Button>
           </SheetFooter>
         </SheetContent>

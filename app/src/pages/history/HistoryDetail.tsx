@@ -1,5 +1,6 @@
 import { useParams } from "react-router-dom";
-import { FileCheck2, Pill, Stethoscope } from "lucide-react";
+import { toast } from "sonner";
+import { Download, FileCheck2, Pill, Stethoscope } from "lucide-react";
 import { TopBar } from "@/components/layout/TopBar";
 import { useAppData } from "@/context/AppDataContext";
 import { SPECIALTIES } from "@/lib/mockData";
@@ -82,15 +83,18 @@ export default function HistoryDetail() {
                   className="flex items-center justify-between rounded-2xl border border-border p-3 text-sm"
                 >
                   <span>{exam.name}</span>
-                  <span
-                    className={
-                      exam.status === "disponivel"
-                        ? "text-xs font-semibold text-emerald-600"
-                        : "text-xs font-semibold text-amber-600"
-                    }
-                  >
-                    {exam.status === "disponivel" ? "Disponível" : "Pendente"}
-                  </span>
+                  {exam.status === "disponivel" ? (
+                    <button
+                      type="button"
+                      onClick={() => toast.success(`Download de "${exam.name}" iniciado.`)}
+                      className="flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
+                      aria-label={`Baixar ${exam.name}`}
+                    >
+                      <Download className="h-3.5 w-3.5" /> Baixar
+                    </button>
+                  ) : (
+                    <span className="text-xs font-semibold text-amber-600">Pendente</span>
+                  )}
                 </li>
               ))}
             </ul>

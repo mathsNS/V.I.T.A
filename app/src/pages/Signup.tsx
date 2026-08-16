@@ -16,7 +16,9 @@ export default function Signup() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [phone, setPhone] = useState("");
   const [birthDate, setBirthDate] = useState("");
   const [consent, setConsent] = useState(false);
@@ -29,6 +31,7 @@ export default function Signup() {
     if (!name.trim()) return setError("Informe seu nome completo.");
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return setError("Informe um e-mail válido.");
     if (password.length < 6) return setError("A senha deve ter pelo menos 6 caracteres.");
+    if (password !== confirmPassword) return setError("As senhas não coincidem. Verifique e tente novamente.");
     setStep(2);
   }
 
@@ -103,7 +106,7 @@ export default function Signup() {
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="signup-password">Senha</Label>
+                <Label htmlFor="signup-password">Senha <span className="text-destructive">*</span></Label>
                 <div className="relative">
                   <Input
                     id="signup-password"
@@ -121,6 +124,28 @@ export default function Signup() {
                     aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
                   >
                     {showPassword ? <EyeOff className="h-4.5 w-4.5" /> : <Eye className="h-4.5 w-4.5" />}
+                  </button>
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="signup-confirm-password">Confirmar senha <span className="text-destructive">*</span></Label>
+                <div className="relative">
+                  <Input
+                    id="signup-confirm-password"
+                    type={showConfirmPassword ? "text" : "password"}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="Confirme sua senha"
+                    className="h-12 rounded-2xl pr-11"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword((v) => !v)}
+                    className="absolute inset-y-0 right-3 flex items-center text-muted-foreground"
+                    aria-label={showConfirmPassword ? "Ocultar confirmação" : "Mostrar confirmação"}
+                  >
+                    {showConfirmPassword ? <EyeOff className="h-4.5 w-4.5" /> : <Eye className="h-4.5 w-4.5" />}
                   </button>
                 </div>
               </div>
@@ -190,7 +215,8 @@ export default function Signup() {
                 />
                 <span>
                   Concordo com o uso dos meus dados pessoais e de saúde para a
-                  pré-triagem, em conformidade com a LGPD.
+                  pré-triagem, em conformidade com a LGPD.{" "}
+                  <span className="font-semibold text-foreground">(Obrigatório)</span>
                 </span>
               </label>
 

@@ -178,6 +178,8 @@ export const INITIAL_APPOINTMENTS: Appointment[] = [
     modality: "teleconsulta",
     status: "confirmada",
     priority: "media",
+    patientId: "patient-demo-marina",
+    patientName: "Marina Costa",
     reason: "Dor no peito e falta de ar recorrentes",
     location: "Teleconsulta pelo app V.I.T.A.",
     createdAt: new Date().toISOString(),

@@ -62,6 +62,8 @@ export interface TriageResult {
   specialtyId: string;
   hypothesis: string;
   summary: Record<string, string>;
+  attachments?: ChatAttachment[];
+  patientProfile?: PatientProfile;
 }
 
 export interface Appointment {

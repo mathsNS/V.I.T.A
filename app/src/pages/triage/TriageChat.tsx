@@ -41,6 +41,9 @@ function questionLabel(id: string): string {
     duration: "Duração dos sintomas",
     intensity: "Intensidade",
     history: "Histórico/medicações",
+    chronicConditions: "Condições de saúde",
+    medications: "Medicamentos em uso",
+    allergies: "Alergias",
     attachment: "Exames",
   };
   return map[id] ?? id;
@@ -130,7 +133,10 @@ export default function TriageChat() {
       `Sintoma principal: ${chiefComplaint}`,
       `Duração: ${finalAnswers.duration ?? "não informado"}`,
       `Intensidade: ${finalAnswers.intensity ?? "não informado"}`,
-      `Histórico/medicações: ${finalAnswers.history ?? "não informado"}`,
+      `Condições de saúde: ${finalAnswers.chronicConditions ?? finalAnswers.history ?? "não informado"}`,
+      `Medicamentos em uso: ${finalAnswers.medications ?? "não informado"}`,
+      `Alergias: ${finalAnswers.allergies ?? "não informado"}`,
+      `Exames: ${finalAnswers.attachment ?? "nenhum anexo"}`,
     ].join("\n");
     pushBotMessage(
       `Perfeito! Aqui está o resumo da sua triagem:\n\n${lines}\n\nPodemos confirmar o envio para o profissional de saúde?`,
@@ -205,6 +211,11 @@ export default function TriageChat() {
       const specialtyId = recommendSpecialty(chiefComplaint);
       const priority = classifyPriority({ chiefComplaint, intensity, isEmergency: false });
       const specialty = SPECIALTIES.find((s) => s.id === specialtyId);
+      const informedValue = (value?: string) => {
+        if (!value || /^(não|prefiro)/i.test(value)) return [];
+        return [value];
+      };
+      const attachments = messages.flatMap((message) => message.attachments ?? []);
 
       const result = addTriageResult({
         chiefComplaint,
@@ -212,6 +223,12 @@ export default function TriageChat() {
         specialtyId,
         hypothesis: `Quadro compatível com avaliação em ${specialty?.name ?? "Clínico Geral"}.`,
         summary: answers,
+        attachments,
+        patientProfile: {
+          chronicConditions: informedValue(answers.chronicConditions ?? answers.history),
+          medications: informedValue(answers.medications),
+          allergies: informedValue(answers.allergies),
+        },
       });
 
       clearDraft();
@@ -436,7 +453,7 @@ export default function TriageChat() {
           <p className="text-sm text-muted-foreground">
             Você pode salvar o progresso e continuar depois, ou sair sem salvar.
           </p>
-          <DialogFooter className="flex-col gap-2">
+          <DialogFooter className="flex-col gap-2 sm:flex-col sm:items-stretch">
             <Button
               size="lg"
               className="w-full rounded-2xl"

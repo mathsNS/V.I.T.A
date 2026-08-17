@@ -57,9 +57,19 @@ export const FOLLOW_UP_QUESTIONS: TriageQuestion[] = [
     quickReplies: ["2", "5", "8", "Não sei"],
   },
   {
-    id: "history",
-    text: "Você tem alguma condição de saúde, usa algum medicamento ou tem alergias que eu deva saber?",
-    quickReplies: ["Não tenho nada disso", "Prefiro não responder agora"],
+    id: "chronicConditions",
+    text: "Você possui alguma condição de saúde ou doença crônica que o profissional deva saber?",
+    quickReplies: ["Não possuo", "Hipertensão arterial", "Diabetes", "Prefiro não responder"],
+  },
+  {
+    id: "medications",
+    text: "Você usa algum medicamento atualmente? Se sim, informe o nome e, se souber, a dose.",
+    quickReplies: ["Não uso medicamentos", "Losartana 50 mg", "Metformina 850 mg", "Prefiro não responder"],
+  },
+  {
+    id: "allergies",
+    text: "Você possui alguma alergia conhecida, principalmente a medicamentos?",
+    quickReplies: ["Não tenho alergias conhecidas", "Dipirona", "Penicilina", "Prefiro não responder"],
   },
   {
     id: "attachment",
